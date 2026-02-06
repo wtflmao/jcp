@@ -21,6 +21,16 @@ const (
 	EventOrderBookSubscribe  = "market:orderbook:subscribe"
 )
 
+// safeCall 安全调用，捕获 panic 避免崩溃
+func safeCall(fn func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			// 可以在这里记录日志
+		}
+	}()
+	fn()
+}
+
 // MarketDataPusher 市场数据推送服务
 type MarketDataPusher struct {
 	ctx           context.Context
@@ -148,37 +158,32 @@ func (p *MarketDataPusher) pushLoop() {
 	defer marketIndicesTicker.Stop()
 
 	// 立即推送一次
-	p.pushStockData()
-	p.pushOrderBookData()
-	p.pushTelegraphData()
-	p.pushMarketStatus()
-	p.pushMarketIndices()
+	safeCall(p.pushStockData)
+	safeCall(p.pushOrderBookData)
+	safeCall(p.pushTelegraphData)
+	safeCall(p.pushMarketStatus)
+	safeCall(p.pushMarketIndices)
 
 	for {
 		select {
 		case <-p.stopChan:
 			return
 		case <-stockTicker.C:
-			p.pushStockData()
+			safeCall(p.pushStockData)
 		case <-orderBookTicker.C:
-			p.pushOrderBookData()
+			safeCall(p.pushOrderBookData)
 		case <-telegraphTicker.C:
-			p.pushTelegraphData()
+			safeCall(p.pushTelegraphData)
 		case <-marketStatusTicker.C:
-			p.pushMarketStatus()
+			safeCall(p.pushMarketStatus)
 		case <-marketIndicesTicker.C:
-			p.pushMarketIndices()
+			safeCall(p.pushMarketIndices)
 		}
 	}
 }
 
 // pushStockData 推送股票实时数据
 func (p *MarketDataPusher) pushStockData() {
-	defer func() {
-		if r := recover(); r != nil {
-			// 忽略 panic
-		}
-	}()
 	p.mu.RLock()
 	codes := make([]string, len(p.subscribedCodes))
 	copy(codes, p.subscribedCodes)
@@ -199,11 +204,6 @@ func (p *MarketDataPusher) pushStockData() {
 
 // pushOrderBookData 推送盘口数据
 func (p *MarketDataPusher) pushOrderBookData() {
-	defer func() {
-		if r := recover(); r != nil {
-			// 忽略 panic
-		}
-	}()
 	p.mu.RLock()
 	code := p.currentOrderBook
 	p.mu.RUnlock()
@@ -224,11 +224,6 @@ func (p *MarketDataPusher) pushOrderBookData() {
 
 // pushTelegraphData 推送快讯数据
 func (p *MarketDataPusher) pushTelegraphData() {
-	defer func() {
-		if r := recover(); r != nil {
-			// 忽略 panic
-		}
-	}()
 	if p.newsService == nil {
 		return
 	}
@@ -256,22 +251,12 @@ func (p *MarketDataPusher) pushTelegraphData() {
 
 // pushMarketStatus 推送市场状态
 func (p *MarketDataPusher) pushMarketStatus() {
-	defer func() {
-		if r := recover(); r != nil {
-			// 忽略 panic，避免崩溃
-		}
-	}()
 	status := p.marketService.GetMarketStatus()
 	runtime.EventsEmit(p.ctx, EventMarketStatusUpdate, status)
 }
 
 // pushMarketIndices 推送大盘指数
 func (p *MarketDataPusher) pushMarketIndices() {
-	defer func() {
-		if r := recover(); r != nil {
-			// 忽略 panic，避免崩溃
-		}
-	}()
 	indices, err := p.marketService.GetMarketIndices()
 	if err != nil {
 		return
