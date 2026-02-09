@@ -9,6 +9,7 @@ import (
 	"cloud.google.com/go/auth"
 	"cloud.google.com/go/auth/credentials"
 	"cloud.google.com/go/auth/httptransport"
+	"github.com/run-bigpig/jcp/internal/adk/anthropic"
 	"github.com/run-bigpig/jcp/internal/adk/openai"
 	"github.com/run-bigpig/jcp/internal/models"
 	"github.com/run-bigpig/jcp/internal/pkg/proxy"
@@ -42,6 +43,8 @@ func (f *ModelFactory) CreateModel(ctx context.Context, config *models.AIConfig)
 			return f.createOpenAIResponsesModel(config)
 		}
 		return f.createOpenAIModel(config)
+	case models.AIProviderAnthropic:
+		return f.createAnthropicModel(config)
 	default:
 		return nil, fmt.Errorf("unsupported provider: %s", config.Provider)
 	}
@@ -150,4 +153,32 @@ func (f *ModelFactory) createOpenAIResponsesModel(config *models.AIConfig) (mode
 		Transport: proxy.GetManager().GetTransport(),
 	}
 	return openai.NewResponsesModel(config.ModelName, config.APIKey, baseURL, httpClient), nil
+}
+
+// createAnthropicModel 创建 Anthropic Claude 模型
+func (f *ModelFactory) createAnthropicModel(config *models.AIConfig) (model.LLM, error) {
+	httpClient := &http.Client{
+		Transport: proxy.GetManager().GetTransport(),
+	}
+
+	baseURL := config.BaseURL
+	if baseURL == "" {
+		baseURL = anthropic.DefaultBaseURL
+	}
+	// 去除用户可能添加的 /v1 后缀（模型内部会拼接 /v1/messages）
+	baseURL = strings.TrimRight(baseURL, "/")
+	baseURL = strings.TrimSuffix(baseURL, "/v1")
+
+	maxTokens := config.MaxTokens
+	if maxTokens <= 0 {
+		maxTokens = anthropic.DefaultMaxTokens
+	}
+
+	return anthropic.NewAnthropicModel(
+		config.ModelName,
+		config.APIKey,
+		baseURL,
+		maxTokens,
+		httpClient,
+	), nil
 }

@@ -331,7 +331,7 @@ const CloseConfirmDialog: React.FC<CloseConfirmDialogProps> = ({ onSave, onDisca
 );
 
 // ========== Provider 设置选项卡 ==========
-const PROVIDERS = ['openai', 'gemini', 'vertexai'] as const;
+const PROVIDERS = ['openai', 'gemini', 'vertexai', 'anthropic'] as const;
 
 interface ProviderSettingsProps {
   configs: AIConfig[];
@@ -871,6 +871,7 @@ const getDefaultBaseUrl = (provider: string): string => {
   switch (provider) {
     case 'openai': return 'https://api.openai.com/v1';
     case 'gemini': return 'https://generativelanguage.googleapis.com';
+    case 'anthropic': return 'https://api.anthropic.com';
     default: return '';
   }
 };
@@ -880,6 +881,7 @@ const getDefaultModel = (provider: string): string => {
     case 'openai': return 'gpt-4';
     case 'gemini': return 'gemini-pro';
     case 'vertexai': return 'gemini-1.5-pro';
+    case 'anthropic': return 'claude-sonnet-4-5-20250929';
     default: return '';
   }
 };
