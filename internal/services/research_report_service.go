@@ -66,6 +66,7 @@ func (s *ResearchReportService) GetResearchReports(stockCode string, pageSize, p
 	// 去除股票代码前缀
 	code := strings.TrimPrefix(stockCode, "sz")
 	code = strings.TrimPrefix(code, "sh")
+	code = strings.TrimPrefix(code, "bj")
 
 	// 构建请求URL
 	url := fmt.Sprintf("%s?industryCode=*&pageSize=%d&industry=*&rating=*&ratingChange=*&beginTime=2020-01-01&endTime=%d-01-01&pageNo=%d&fields=&qType=0&orgCode=&code=%s&rcode=",

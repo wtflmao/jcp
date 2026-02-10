@@ -51,8 +51,11 @@ func NewStockInfoService() *StockInfoService {
 // IsETF 判断是否为场内ETF
 func IsETF(code string) bool {
 	return strings.HasPrefix(code, "sh51") ||
+		strings.HasPrefix(code, "sh52") ||
 		strings.HasPrefix(code, "sz15") ||
-		strings.HasPrefix(code, "sh58")
+		strings.HasPrefix(code, "sz16") ||
+		strings.HasPrefix(code, "sh58") ||
+		strings.HasPrefix(code, "bj88")
 }
 
 // GetExtendedInfo 获取个股扩展信息（带缓存）

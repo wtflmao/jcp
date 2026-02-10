@@ -247,6 +247,9 @@ func (cs *ConfigService) SearchStocks(keyword string, limit int) []StockSearchRe
 				} else if strings.HasSuffix(tsCode, ".SZ") {
 					market = "深圳"
 					fullSymbol = "sz" + symbol
+				} else if strings.HasSuffix(tsCode, ".BJ") {
+					market = "北京"
+					fullSymbol = "bj" + symbol
 				}
 			}
 			if fullSymbol == "" {
@@ -314,6 +317,9 @@ func (cs *ConfigService) GetStockBasicInfo(symbol string) *StockSearchResult {
 			} else if strings.HasSuffix(tsCode, ".SZ") {
 				market = "深圳"
 				fullSymbol = "sz" + symbol
+			} else if strings.HasSuffix(tsCode, ".BJ") {
+				market = "北京"
+				fullSymbol = "bj" + symbol
 			}
 		}
 		if fullSymbol == "" {
