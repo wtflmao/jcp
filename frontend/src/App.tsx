@@ -13,7 +13,7 @@ import { getWatchlist, addToWatchlist, removeFromWatchlist } from './services/wa
 import { getKLineData, getOrderBook } from './services/stockService';
 import { getOrCreateSession, StockSession, updateStockPosition } from './services/sessionService';
 import { useMarketEvents } from './hooks/useMarketEvents';
-import { Stock, KLineData, OrderBook, TimePeriod, Telegraph, MarketIndex, MarketStatus, formatPrice, isETF } from './types';
+import { Stock, KLineData, OrderBook, TimePeriod, Telegraph, MarketIndex, MarketStatus, formatPrice } from './types';
 import { Radio, Settings, List, Minus, Square, X, Copy, Briefcase, TrendingUp, BarChart3 } from 'lucide-react';
 import logo from './assets/images/logo.png';
 import { GetTelegraphList, OpenURL, WindowMinimize, WindowMaximize, WindowClose } from '../wailsjs/go/main/App';

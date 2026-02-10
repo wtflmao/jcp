@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import { KLineData, TimePeriod, Stock, formatPrice, isETF } from '../types';
+import { KLineData, TimePeriod, Stock, formatPrice } from '../types';
 
 interface StockChartProps {
   data: KLineData[];
@@ -53,6 +53,8 @@ const Candlestick = (props: any) => {
 export const StockChart: React.FC<StockChartProps> = ({ data, period, onPeriodChange, stock }) => {
   // 确保 data 不为 null
   const safeData = data || [];
+  const sym = stock?.symbol || "";
+  const fp = (v: number) => formatPrice(v, sym);
   // 缩放和滑动状态
   const [visibleCount, setVisibleCount] = useState(60);
   const [startIndex, setStartIndex] = useState(0);
