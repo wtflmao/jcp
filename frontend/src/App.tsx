@@ -79,6 +79,28 @@ const App: React.FC = () => {
     }
   }, []);
 
+  // 处理K线数据更新（来自后端推送）
+  const handleKLineUpdate = useCallback((data: { code: string; period: string; data: KLineData[] }) => {
+    if (!data || !data.data || data.data.length === 0) return;
+    // 只处理当前选中股票和当前周期的数据
+    if (data.code !== selectedSymbol || data.period !== timePeriod) return;
+    setKLineData(prev => {
+      if (prev.length === 0) return data.data;
+      const newData = [...prev];
+      for (const item of data.data) {
+        const idx = newData.findIndex(d => d.time === item.time);
+        if (idx >= 0) {
+          // 更新已有的K线（同一时间戳）
+          newData[idx] = item;
+        } else {
+          // 追加新K线
+          newData.push(item);
+        }
+      }
+      return newData;
+    });
+  }, [selectedSymbol, timePeriod]);
+
   // 获取快讯列表
   const handleShowTelegraphList = async () => {
     if (!showTelegraphList) {
@@ -104,12 +126,13 @@ const App: React.FC = () => {
   };
 
   // 使用市场事件 Hook
-  const { subscribeOrderBook } = useMarketEvents({
+  const { subscribeOrderBook, subscribeKLine } = useMarketEvents({
     onStockUpdate: handleStockUpdate,
     onOrderBookUpdate: handleOrderBookUpdate,
     onTelegraphUpdate: handleTelegraphUpdate,
     onMarketStatusUpdate: handleMarketStatusUpdate,
     onMarketIndicesUpdate: handleMarketIndicesUpdate,
+    onKLineUpdate: handleKLineUpdate,
   });
 
   // Handle Adding Stock
@@ -194,6 +217,8 @@ const App: React.FC = () => {
     if (!selectedSymbol) return;
     // 切换时先清空数据，避免闪烁
     setKLineData([]);
+    // 订阅该股票+周期的K线实时推送
+    subscribeKLine(selectedSymbol, timePeriod);
     const loadKLineData = async () => {
       // 分时图需要更多数据点（1分钟K线，一天约240根）
       const dataLen = timePeriod === '1m' ? 250 : 60;
@@ -201,7 +226,7 @@ const App: React.FC = () => {
       setKLineData(data);
     };
     loadKLineData();
-  }, [selectedSymbol, timePeriod]);
+  }, [selectedSymbol, timePeriod, subscribeKLine]);
 
   // 初始化窗口最大化状态
   useEffect(() => {
