@@ -226,6 +226,11 @@ func (ms *MarketService) parseStockFields(code string, parts []string) models.St
 	volume, _ := strconv.ParseInt(parts[8], 10, 64)
 	amount, _ := strconv.ParseFloat(parts[9], 64)
 
+	// 盘前/无数据时当前价为0，回退到昨收价
+	if price == 0 && preClose > 0 {
+		price = preClose
+	}
+
 	change := price - preClose
 	changePercent := 0.0
 	if preClose > 0 {
