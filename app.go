@@ -70,8 +70,13 @@ func NewApp() *App {
 	marketService := services.NewMarketService()
 	newsService := services.NewNewsService()
 
+	// 初始化扩展数据服务
+	stockInfoSvc := services.NewStockInfoService()
+	marketBreadthSvc := services.NewMarketBreadthService()
+	sectorSvc := services.NewSectorService()
+
 	// 初始化工具注册中心
-	toolRegistry := tools.NewRegistry(marketService, newsService, configService, researchReportService, hotTrendSvc)
+	toolRegistry := tools.NewRegistry(marketService, newsService, configService, researchReportService, hotTrendSvc, stockInfoSvc, sectorSvc, marketBreadthSvc)
 
 	// 初始化 MCP 管理器
 	mcpManager := mcp.NewManager()

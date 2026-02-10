@@ -20,6 +20,9 @@ type Registry struct {
 	configService         *services.ConfigService
 	researchReportService *services.ResearchReportService
 	hotTrendService       *hottrend.HotTrendService
+	stockInfoService      *services.StockInfoService
+	sectorService         *services.SectorService
+	marketBreadthService  *services.MarketBreadthService
 	tools                 map[string]tool.Tool
 	toolInfos             map[string]ToolInfo // 工具信息映射
 }
@@ -31,6 +34,9 @@ func NewRegistry(
 	configService *services.ConfigService,
 	researchReportService *services.ResearchReportService,
 	hotTrendService *hottrend.HotTrendService,
+	stockInfoService *services.StockInfoService,
+	sectorService *services.SectorService,
+	marketBreadthService *services.MarketBreadthService,
 ) *Registry {
 	r := &Registry{
 		marketService:         marketService,
@@ -38,6 +44,9 @@ func NewRegistry(
 		configService:         configService,
 		researchReportService: researchReportService,
 		hotTrendService:       hotTrendService,
+		stockInfoService:      stockInfoService,
+		sectorService:         sectorService,
+		marketBreadthService:  marketBreadthService,
 		tools:                 make(map[string]tool.Tool),
 		toolInfos:             make(map[string]ToolInfo),
 	}
@@ -70,6 +79,9 @@ func (r *Registry) registerAllTools() {
 
 	// 注册舆情热点工具
 	r.registerTool("get_hottrend", "获取全网舆情热点，支持微博、知乎、B站、百度、抖音、头条等平台的实时热搜榜单", r.createHotTrendTool)
+
+	// 注册市场广度工具
+	r.registerTool("get_market_breadth", "获取全市场涨跌统计数据，包括上涨/下跌/平盘家数、涨停/跌停家数", r.createMarketBreadthTool)
 }
 
 // registerTool 注册单个工具并保存信息
