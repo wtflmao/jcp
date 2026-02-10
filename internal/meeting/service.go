@@ -640,16 +640,21 @@ func (s *Service) runSingleAgentWithHistory(
 				})
 			}
 
-			// 流式文本
+			// 流式文本：只累加 partial 事件，避免 final 事件重复
 			if part.Text != "" {
-				content += part.Text
-				if progressCallback != nil && event.LLMResponse.Partial {
-					progressCallback(ProgressEvent{
-						Type:      "streaming",
-						AgentID:   cfg.ID,
-						AgentName: cfg.Name,
-						Content:   part.Text,
-					})
+				if event.LLMResponse.Partial {
+					content += part.Text
+					if progressCallback != nil {
+						progressCallback(ProgressEvent{
+							Type:      "streaming",
+							AgentID:   cfg.ID,
+							AgentName: cfg.Name,
+							Content:   part.Text,
+						})
+					}
+				} else if content == "" {
+					// 非流式 fallback：如果没收到任何 partial 事件，用 final 事件的文本
+					content += part.Text
 				}
 			}
 		}
