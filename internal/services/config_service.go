@@ -264,3 +264,68 @@ func (cs *ConfigService) SearchStocks(keyword string, limit int) []StockSearchRe
 
 	return results
 }
+
+// GetStockBasicInfo 根据股票代码获取基础信息
+// symbol: 纯数字代码，如 "600519"
+func (cs *ConfigService) GetStockBasicInfo(symbol string) *StockSearchResult {
+	if symbol == "" {
+		return nil
+	}
+
+	var basicData stockBasicData
+	if err := json.Unmarshal(embed.StockBasicJSON, &basicData); err != nil {
+		return nil
+	}
+
+	var symbolIdx, nameIdx, industryIdx, tsCodeIdx int = -1, -1, -1, -1
+	for i, field := range basicData.Data.Fields {
+		switch field {
+		case "symbol":
+			symbolIdx = i
+		case "name":
+			nameIdx = i
+		case "industry":
+			industryIdx = i
+		case "ts_code":
+			tsCodeIdx = i
+		}
+	}
+
+	if symbolIdx < 0 || nameIdx < 0 {
+		return nil
+	}
+
+	for _, item := range basicData.Data.Items {
+		s, _ := item[symbolIdx].(string)
+		if s != symbol {
+			continue
+		}
+
+		name, _ := item[nameIdx].(string)
+		var industry, market, fullSymbol string
+		if industryIdx >= 0 && industryIdx < len(item) {
+			industry, _ = item[industryIdx].(string)
+		}
+		if tsCodeIdx >= 0 && tsCodeIdx < len(item) {
+			tsCode, _ := item[tsCodeIdx].(string)
+			if strings.HasSuffix(tsCode, ".SH") {
+				market = "上海"
+				fullSymbol = "sh" + symbol
+			} else if strings.HasSuffix(tsCode, ".SZ") {
+				market = "深圳"
+				fullSymbol = "sz" + symbol
+			}
+		}
+		if fullSymbol == "" {
+			fullSymbol = symbol
+		}
+
+		return &StockSearchResult{
+			Symbol:   fullSymbol,
+			Name:     name,
+			Industry: industry,
+			Market:   market,
+		}
+	}
+	return nil
+}
