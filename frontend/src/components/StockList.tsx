@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Stock, MarketIndex } from '../types';
+import { Stock, MarketIndex, formatPrice } from '../types';
 import { searchStocks, StockSearchResult } from '../services/stockService';
 import { TrendingUp, TrendingDown, Search, X } from 'lucide-react';
 import { MarketIndices } from './MarketIndices';
@@ -171,7 +171,7 @@ export const StockList: React.FC<StockListProps> = ({
                 </div>
                 <div className="text-right">
                   <div className={`font-mono ${isPositive ? 'text-red-500' : 'text-green-500'}`}>
-                    {stock.price.toFixed(2)}
+                    {formatPrice(stock.price, stock.symbol)}
                   </div>
                   <div className={`text-xs font-mono flex items-center justify-end ${isPositive ? 'text-red-500' : 'text-green-500'}`}>
                     {isPositive ? <TrendingUp size={12} className="mr-1"/> : <TrendingDown size={12} className="mr-1"/>}

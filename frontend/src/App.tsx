@@ -13,7 +13,7 @@ import { getWatchlist, addToWatchlist, removeFromWatchlist } from './services/wa
 import { getKLineData, getOrderBook } from './services/stockService';
 import { getOrCreateSession, StockSession, updateStockPosition } from './services/sessionService';
 import { useMarketEvents } from './hooks/useMarketEvents';
-import { Stock, KLineData, OrderBook, TimePeriod, Telegraph, MarketIndex, MarketStatus } from './types';
+import { Stock, KLineData, OrderBook, TimePeriod, Telegraph, MarketIndex, MarketStatus, formatPrice, isETF } from './types';
 import { Radio, Settings, List, Minus, Square, X, Copy, Briefcase, TrendingUp, BarChart3 } from 'lucide-react';
 import logo from './assets/images/logo.png';
 import { GetTelegraphList, OpenURL, WindowMinimize, WindowMaximize, WindowClose } from '../wailsjs/go/main/App';
@@ -403,13 +403,13 @@ const App: React.FC = () => {
                 </button>
               </div>
               <div className={`text-3xl font-mono font-bold ${selectedStock.change >= 0 ? 'text-red-500' : 'text-green-500'}`}>
-                {selectedStock.price.toFixed(2)}
+                {formatPrice(selectedStock.price, selectedStock.symbol)}
               </div>
             </div>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4 text-sm">
                 <span className={`font-mono ${selectedStock.change >= 0 ? 'text-red-500' : 'text-green-500'}`}>
-                  {selectedStock.change >= 0 ? '+' : ''}{selectedStock.change.toFixed(2)}
+                  {selectedStock.change >= 0 ? '+' : ''}{formatPrice(selectedStock.change, selectedStock.symbol)}
                 </span>
                 <span className={`font-mono ${selectedStock.change >= 0 ? 'text-red-500' : 'text-green-500'}`}>
                   {selectedStock.change >= 0 ? '+' : ''}{selectedStock.changePercent.toFixed(2)}%
@@ -423,11 +423,11 @@ const App: React.FC = () => {
           
           {/* A股传统行情数据 */}
           <div className="grid grid-cols-4 gap-px p-2 fin-panel border-b fin-divider shrink-0 text-xs">
-            <AStockStatItem label="今开" value={selectedStock.open} preClose={selectedStock.preClose} />
-            <AStockStatItem label="最高" value={selectedStock.high} preClose={selectedStock.preClose} />
+            <AStockStatItem label="今开" value={selectedStock.open} preClose={selectedStock.preClose} symbol={selectedStock.symbol} />
+            <AStockStatItem label="最高" value={selectedStock.high} preClose={selectedStock.preClose} symbol={selectedStock.symbol} />
             <AStockStatItem label="成交量" value={formatVolume(selectedStock.volume)} isPlain />
-            <AStockStatItem label="昨收" value={selectedStock.preClose} isPlain />
-            <AStockStatItem label="最低" value={selectedStock.low} preClose={selectedStock.preClose} />
+            <AStockStatItem label="昨收" value={selectedStock.preClose} isPlain symbol={selectedStock.symbol} />
+            <AStockStatItem label="最低" value={selectedStock.low} preClose={selectedStock.preClose} symbol={selectedStock.symbol} />
             <AStockStatItem label="成交额" value={formatAmount(selectedStock.amount)} isPlain />
             <AStockStatItem label="振幅" value={selectedStock.preClose > 0 ? ((selectedStock.high - selectedStock.low) / selectedStock.preClose * 100).toFixed(2) + '%' : '--'} isPlain />
           </div>
@@ -446,7 +446,7 @@ const App: React.FC = () => {
             {/* Bottom Info Panel: Order Book Only */}
             <div className="h-64 border-t fin-divider flex fin-panel shrink-0">
                <div className="flex-1 overflow-hidden relative">
-                  <OrderBookComponent data={orderBook} />
+                  <OrderBookComponent data={orderBook} symbol={selectedStock.symbol} />
                </div>
             </div>
           </div>
@@ -487,11 +487,12 @@ interface AStockStatItemProps {
   value: number | string;
   preClose?: number;
   isPlain?: boolean;
+  symbol?: string;
 }
 
-const AStockStatItem: React.FC<AStockStatItemProps> = ({ label, value, preClose, isPlain }) => {
+const AStockStatItem: React.FC<AStockStatItemProps> = ({ label, value, preClose, isPlain, symbol }) => {
   let colorClass = 'text-slate-100';
-  let displayValue = typeof value === 'string' ? value : value.toFixed(2);
+  let displayValue = typeof value === 'string' ? value : (symbol ? formatPrice(value, symbol) : value.toFixed(2));
 
   if (!isPlain && typeof value === 'number' && preClose) {
     if (value > preClose) colorClass = 'text-red-500';

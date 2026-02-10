@@ -120,3 +120,13 @@ export interface MarketStatus {
   isTradeDay: boolean;   // 是否交易日
   holidayName: string;   // 节假日名称
 }
+
+// ETF 判断（根据股票代码前缀）
+export function isETF(symbol: string): boolean {
+  return /^(sh5[128]|sz1[56]|bj88)/.test(symbol);
+}
+
+// 价格格式化：ETF 显示 3 位小数，其他 2 位
+export function formatPrice(price: number, symbol: string): string {
+  return price.toFixed(isETF(symbol) ? 3 : 2);
+}

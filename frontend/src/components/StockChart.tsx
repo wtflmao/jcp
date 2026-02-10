@@ -12,7 +12,7 @@ import {
   ResponsiveContainer,
   Cell
 } from 'recharts';
-import { KLineData, TimePeriod, Stock } from '../types';
+import { KLineData, TimePeriod, Stock, formatPrice, isETF } from '../types';
 
 interface StockChartProps {
   data: KLineData[];
@@ -199,22 +199,22 @@ export const StockChart: React.FC<StockChartProps> = ({ data, period, onPeriodCh
          <div className="text-xs text-slate-400 font-mono flex gap-4">
            {isIntraday ? (
              <>
-               <span>现价: <span className="text-accent-2">{(stock?.price || lastClose).toFixed(2)}</span></span>
-               <span>均价: <span className="text-yellow-400">{safeData[safeData.length - 1].avg?.toFixed(2) || '--'}</span></span>
-               <span>最高: <span className="text-red-400">{(stock?.high || Math.max(...safeData.map(d => d.high))).toFixed(2)}</span></span>
-               <span>最低: <span className="text-green-400">{(stock?.low || Math.min(...safeData.map(d => d.low))).toFixed(2)}</span></span>
+               <span>现价: <span className="text-accent-2">{fp(stock?.price || lastClose)}</span></span>
+               <span>均价: <span className="text-yellow-400">{(safeData[safeData.length - 1].avg != null ? fp(safeData[safeData.length - 1].avg!) : null) || '--'}</span></span>
+               <span>最高: <span className="text-red-400">{fp(stock?.high || Math.max(...safeData.map(d => d.high)))}</span></span>
+               <span>最低: <span className="text-green-400">{fp(stock?.low || Math.min(...safeData.map(d => d.low)))}</span></span>
              </>
            ) : (
              <>
-               <span>收: <span className="text-accent-2">{lastClose.toFixed(2)}</span></span>
-               <span>开: {lastVisible?.open.toFixed(2)}</span>
-               <span>高: <span className="text-red-400">{lastVisible?.high.toFixed(2)}</span></span>
-               <span>低: <span className="text-green-400">{lastVisible?.low.toFixed(2)}</span></span>
+               <span>收: <span className="text-accent-2">{fp(lastClose)}</span></span>
+               <span>开: {(lastVisible ? fp(lastVisible.open) : '--')}</span>
+               <span>高: <span className="text-red-400">{(lastVisible ? fp(lastVisible.high) : '--')}</span></span>
+               <span>低: <span className="text-green-400">{(lastVisible ? fp(lastVisible.low) : '--')}</span></span>
                {lastVisible?.ma5 && (
                  <>
-                   <span>MA5: <span className="text-yellow-400">{lastVisible?.ma5?.toFixed(2)}</span></span>
-                   <span>MA10: <span className="text-purple-400">{lastVisible?.ma10?.toFixed(2)}</span></span>
-                   <span>MA20: <span className="text-orange-400">{lastVisible?.ma20?.toFixed(2)}</span></span>
+                   <span>MA5: <span className="text-yellow-400">{(lastVisible?.ma5 != null ? fp(lastVisible.ma5!) : '--')}</span></span>
+                   <span>MA10: <span className="text-purple-400">{(lastVisible?.ma10 != null ? fp(lastVisible.ma10!) : '--')}</span></span>
+                   <span>MA20: <span className="text-orange-400">{(lastVisible?.ma20 != null ? fp(lastVisible.ma20!) : '--')}</span></span>
                  </>
                )}
              </>
@@ -268,7 +268,7 @@ export const StockChart: React.FC<StockChartProps> = ({ data, period, onPeriodCh
                   tick={{ fill: '#94a3b8', fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
-                  tickFormatter={(val) => val.toFixed(2)}
+                  tickFormatter={(val) => fp(val)}
                 />
                 <Tooltip
                   active={!isDragging}
@@ -282,8 +282,8 @@ export const StockChart: React.FC<StockChartProps> = ({ data, period, onPeriodCh
                     return (
                       <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '8px 12px', borderRadius: '4px' }}>
                         <div style={{ color: '#94a3b8', marginBottom: '4px' }}>{label}</div>
-                        <div style={{ color: '#38bdf8' }}>价格: {d.close?.toFixed(2)}</div>
-                        {d.avg && <div style={{ color: '#facc15' }}>均价: {d.avg?.toFixed(2)}</div>}
+                        <div style={{ color: '#38bdf8' }}>价格: {(d.close != null ? fp(d.close) : '--')}</div>
+                        {d.avg && <div style={{ color: '#facc15' }}>均价: {(d.avg != null ? fp(d.avg) : '--')}</div>}
                       </div>
                     );
                   }}
@@ -338,13 +338,13 @@ export const StockChart: React.FC<StockChartProps> = ({ data, period, onPeriodCh
                   return (
                     <div style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', padding: '8px 12px', borderRadius: '4px' }}>
                       <div style={{ color: '#94a3b8', marginBottom: '4px' }}>{label}</div>
-                      <div style={{ color: '#e2e8f0' }}>开: {d.open?.toFixed(2)}</div>
-                      <div style={{ color: '#ef4444' }}>高: {d.high?.toFixed(2)}</div>
-                      <div style={{ color: '#22c55e' }}>低: {d.low?.toFixed(2)}</div>
-                      <div style={{ color: '#38bdf8' }}>收: {d.close?.toFixed(2)}</div>
-                      {d.ma5 && <div style={{ color: '#facc15' }}>MA5: {d.ma5?.toFixed(2)}</div>}
-                      {d.ma10 && <div style={{ color: '#a855f7' }}>MA10: {d.ma10?.toFixed(2)}</div>}
-                      {d.ma20 && <div style={{ color: '#f97316' }}>MA20: {d.ma20?.toFixed(2)}</div>}
+                      <div style={{ color: '#e2e8f0' }}>开: {(d.open != null ? fp(d.open) : '--')}</div>
+                      <div style={{ color: '#ef4444' }}>高: {(d.high != null ? fp(d.high) : '--')}</div>
+                      <div style={{ color: '#22c55e' }}>低: {(d.low != null ? fp(d.low) : '--')}</div>
+                      <div style={{ color: '#38bdf8' }}>收: {(d.close != null ? fp(d.close) : '--')}</div>
+                      {d.ma5 && <div style={{ color: '#facc15' }}>MA5: {(d.ma5 != null ? fp(d.ma5) : '--')}</div>}
+                      {d.ma10 && <div style={{ color: '#a855f7' }}>MA10: {(d.ma10 != null ? fp(d.ma10) : '--')}</div>}
+                      {d.ma20 && <div style={{ color: '#f97316' }}>MA20: {(d.ma20 != null ? fp(d.ma20) : '--')}</div>}
                     </div>
                   );
                 }}

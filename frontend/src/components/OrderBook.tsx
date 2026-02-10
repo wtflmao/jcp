@@ -1,11 +1,12 @@
 import React from 'react';
-import { OrderBook as OrderBookType } from '../types';
+import { OrderBook as OrderBookType, formatPrice } from '../types';
 
 interface OrderBookProps {
   data: OrderBookType;
+  symbol?: string;
 }
 
-export const OrderBook: React.FC<OrderBookProps> = ({ data }) => {
+export const OrderBook: React.FC<OrderBookProps> = ({ data, symbol = '' }) => {
   // 安全检查：确保 data 及其属性存在
   const bids = data?.bids ?? [];
   const asks = data?.asks ?? [];
@@ -36,7 +37,7 @@ export const OrderBook: React.FC<OrderBookProps> = ({ data }) => {
                     className="absolute top-0 left-0 bottom-0 bg-green-900/20 transition-all duration-300" 
                     style={{ width: `${Math.min(bid.percent * 5, 100)}%` }}
                   />
-                  <span className="text-green-400 relative z-10">{bid.price.toFixed(2)}</span>
+                  <span className="text-green-400 relative z-10">{formatPrice(bid.price, symbol)}</span>
                   <span className="text-slate-300 relative z-10">{bid.size}</span>
                 </div>
              ))}
@@ -67,7 +68,7 @@ export const OrderBook: React.FC<OrderBookProps> = ({ data }) => {
                     className="absolute top-0 right-0 bottom-0 bg-red-900/20 transition-all duration-300" 
                     style={{ width: `${Math.min(ask.percent * 5, 100)}%` }} 
                   />
-                  <span className="text-red-400 relative z-10">{ask.price.toFixed(2)}</span>
+                  <span className="text-red-400 relative z-10">{formatPrice(ask.price, symbol)}</span>
                   <span className="text-slate-300 relative z-10">{ask.size}</span>
                 </div>
             ))}

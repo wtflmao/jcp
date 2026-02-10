@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Briefcase } from 'lucide-react';
 import type { StockPosition } from '../types';
+import { formatPrice } from '../types';
 
 interface PositionDialogProps {
   isOpen: boolean;
@@ -78,7 +79,7 @@ export const PositionDialog: React.FC<PositionDialogProps> = ({
               <span className="text-slate-100 font-medium">{stockName}</span>
               <span className="ml-2 text-sm text-slate-400 font-mono">{stockCode}</span>
             </div>
-            <span className="text-lg font-mono text-accent-2">{currentPrice.toFixed(2)}</span>
+            <span className="text-lg font-mono text-accent-2">{formatPrice(currentPrice, stockCode)}</span>
           </div>
         </div>
 
@@ -114,16 +115,16 @@ export const PositionDialog: React.FC<PositionDialogProps> = ({
             <div className="p-3 rounded-lg bg-slate-800/50 space-y-2 text-sm">
               <div className="flex justify-between">
                 <span className="text-slate-400">成本金额</span>
-                <span className="text-slate-200 font-mono">{costAmount.toFixed(2)}</span>
+                <span className="text-slate-200 font-mono">{formatPrice(costAmount, stockCode)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">市值</span>
-                <span className="text-slate-200 font-mono">{marketValue.toFixed(2)}</span>
+                <span className="text-slate-200 font-mono">{formatPrice(marketValue, stockCode)}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-400">盈亏</span>
                 <span className={`font-mono ${profitLoss >= 0 ? 'text-red-500' : 'text-green-500'}`}>
-                  {profitLoss >= 0 ? '+' : ''}{profitLoss.toFixed(2)} ({profitLossPercent >= 0 ? '+' : ''}{profitLossPercent.toFixed(2)}%)
+                  {profitLoss >= 0 ? '+' : ''}{formatPrice(profitLoss, stockCode)} ({profitLossPercent >= 0 ? '+' : ''}{profitLossPercent.toFixed(2)}%)
                 </span>
               </div>
             </div>
